@@ -5,10 +5,26 @@ module SessionsHelper
     session[:user_id] = user.id
   end
 
-  # 現在ログイン中のユーザーを返す（いる場合）
+  # 永続セッションのためにユーザーをデータベースに記憶する
+  # Sessionsヘルパーの動作は、rememberメソッド定義のuser.rememberを呼び出すまで遅延される。そこで記憶トークンを生成してトークンのダイジェストをデータベースに保存する
+  # cookiesメソッドでユーザーIDと記憶トークンの永続cookiesを作成する。
+  def remember(user)
+    user.remember
+    cookies.permanent.encrypted[:user_id] = user.id
+    cookies.permanent[:remember_token] = user.remember_token
+  end
+
+  # 記憶トークンcookieに対応するユーザーを返す
   def current_user
-    if session[:user_id]
-      @current_user ||= User.find_by(id: session[:user_id])
+    # if (user_id = session[:user_id])は比較ではなく代入を行っており、ユーザーIDにユーザーIDのセッションを代入した結果ユーザーIDのセッションが存在していれば
+    if (user_id = session[:user_id])
+      @current_user ||= User.find_by(id: user_id)
+    elsif (user_id = cookies.encrypted[:user_id])
+      user = User.find_by(id: user_id)
+      if user && user.authenticated?(cookies[:remember_token])
+        log_in user
+        @current_user = user
+      end
     end
   end
 
@@ -17,8 +33,15 @@ module SessionsHelper
     !current_user.nil?
   end
 
+  def forget(user)
+    user.forget
+    cookies.delete(:user_id)
+    cookies.delete(:remember_token)
+  end
+
   # 現在のユーザーをログアウトする
   def log_out
+    forget(current_user)
     reset_session
     @current_user = nil   # 安全のため
   end
