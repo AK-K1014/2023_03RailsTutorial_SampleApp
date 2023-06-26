@@ -6,12 +6,14 @@ class SessionsController < ApplicationController
   def create
     user = User.find_by(email: params[:session][:email].downcase)
     if user && user.authenticate(params[:session][:password])
+      # 
+      forwarding_url = session[:forwarding_url]
       reset_session      # ログインの直前に必ずこれを書くこと
       # params[:session][:remember_me] paramsのチェックボックスがオンの時は'1'になり、オフの時は'0'になります。
-      
       params[:session][:remember_me] == '1' ? remember(user) : forget(user)
       log_in user
-      redirect_to user
+      # 転送先URLが存在する場合はそこにリダイレクトし、転送先URLが「nil」の場合はユーザーのプロフィールにリダイレクト出来るようになる。
+      redirect_to forwarding_url || user
     else
       flash.now[:danger] = 'Invalid email/password combination'
       render 'new', status: :unprocessable_entity
