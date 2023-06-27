@@ -22,10 +22,6 @@ module SessionsHelper
     # if (user_id = session[:user_id])は比較ではなく代入を行っており、ユーザーIDにユーザーIDのセッションを代入した結果ユーザーIDのセッションが存在していれば
     if (user_id = session[:user_id])
       user = User.find_by(id: user_id)
-      # puts "----------"
-      # puts user.present?
-      # puts "---------"
-      debugger
       @current_user ||= user if session[:session_token].present? && session[:session_token] == user.session_token
     elsif (user_id = cookies.encrypted[:user_id])
       user = User.find_by(id: user_id)
