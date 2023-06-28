@@ -10,6 +10,7 @@ class UsersController < ApplicationController
 
   def show
     @user = User.find(params[:id])
+    @microposts = @user.microposts.paginate(page: params[:page])
   end
 
   def new
@@ -54,16 +55,7 @@ class UsersController < ApplicationController
                                    :password_confirmation)
     end
 
-    # beforeフィルタ
-
-    # ログイン済みユーザーかどうか確認
-    def logged_in_user
-      unless logged_in?
-        store_location
-        flash[:danger] = "Please log in."
-        redirect_to login_url, status: :see_other
-      end
-    end
+    # beforeフィルター
 
     # 正しいユーザーかどうか確認。別のユーザーが編集しようとするとリダイレクトさせたい。
     # corrent_userメソッドを作成して、beforeフィルターからこのメソッドを呼び出す
