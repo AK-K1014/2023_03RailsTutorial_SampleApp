@@ -1,0 +1,17 @@
+<%# @userがnilでないプロフィールページの場合は何もせず、nilになるHomeページの場合には@userにcurrent_userを代入するコード %>
+<% @user ||= current_user %>
+<div class="stats">
+  <a href="<%= following_user_path(@user) %>">
+    <strong id="following" class="stat">
+    <%# フォローしているユーザーの人数を、次のように関連付けを使って計算 %>
+      <%= @user.following.count %>
+    </strong>
+    following
+  </a>
+  <a href="<%= followers_user_path(@user) %>">
+    <strong id="followers" class="stat">
+      <%= @user.followers.count %>
+    </strong>
+    followers
+  </a>
+</div>
