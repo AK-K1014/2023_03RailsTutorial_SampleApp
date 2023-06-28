@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  # dependent: :destroyオプションはユーザーが削除された時に、そのユーザーに紐づいた、つまりそのユーザーが投稿したマイクロポストも一緒に削除されるようになる
+  has_many :microposts, dependent: :destroy
   # attr_accessorを使って「仮想の」属性を作成
   attr_accessor :remember_token, :activation_token, :reset_token
   before_save   :downcase_email
@@ -86,6 +88,13 @@ class User < ApplicationRecord
   # パスワード再設定の期限が切れている場合はtrueを返す
   def password_reset_expired?
     reset_sent_at < 2.hours.ago
+  end
+
+  # 試作feedの定義
+  # 完全な実装は次章の「ユーザーをフォローする」を参照
+  def feed
+    # ? があることでSQLクエリに代入する前にidがエスケープされるためSQLインジェクション（SQL Injection）と呼ばれる深刻なセキュリティホールを回避できます
+    Micropost.where("user_id = ?", id)
   end
 
   private
